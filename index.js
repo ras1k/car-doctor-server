@@ -6,6 +6,7 @@ const app = express();
 require('dotenv').config()
 const port = process.env.PORT || 5000;
 
+//middleware
 app.use(cors());
 app.use(express.json());
 
@@ -50,7 +51,7 @@ async function run() {
         app.post('/jwt', async (req, res) => {
             const user = req.body;
             console.log(user);
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10h' });
             res.send({ token })
         })
 
@@ -75,7 +76,10 @@ async function run() {
 
         //bookings
         app.get('/bookings', verifyJWT, async (req, res) => {
-
+            const decoded = req.decoded;
+            if(decoded.email !== req.query.email){
+                return res.status(403).send({error: 1, message: 'Forbidden Access'})
+            }
             let query = {};
             if (req.query?.email) {
                 query = { email: req.query.email }
